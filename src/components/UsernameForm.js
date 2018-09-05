@@ -39,7 +39,7 @@ constructor(props) {
               Capsule Project
             </Typography>
             <FormControl>
-              <Input placeholder="Enter username" className="App-textField" 
+              <Input placeholder="Enter username" 
                 onKeyDown={this.onSubmit.bind(this)}
                 onChange={this.handleChange} />
             </FormControl>

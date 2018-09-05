@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import Chatkit from '@pusher/chatkit'
 import MessageList from './components/MessageList'
+import TeamList from './components/TeamList'
 import SendMessageForm from './components/SendMessageForm'
 import TypingIndicator from './components/TypingIndicator'
 import Input from '@material-ui/core/Input';
@@ -20,13 +21,15 @@ class ChatScreen extends Component {
             usersWhoAreTyping: [],
             teamname: '',
             teamprivacy: false,
-            currentUserTeams: {}
+            currentUserTeams: {},
+            currentRoomId: 15479319
         }
         this.sendMessage = this.sendMessage.bind(this)
         this.sendTypingEvent = this.sendTypingEvent.bind(this)
         this.handlePrivacyChange = this.handlePrivacyChange.bind(this)
         this.handleChange = this.handleChange.bind(this)
         this.createTeam = this.createTeam.bind(this)
+        this.chatManager = '';
     }
       
     handleChange(e) {
@@ -43,7 +46,6 @@ class ChatScreen extends Component {
                 private: this.state.teamprivacy,
                 addUserIds: []
             }).then(room => {
-                console.log(room);
                 this.setState({ teamname: '' })
             })
             .catch(err => {
@@ -53,34 +55,34 @@ class ChatScreen extends Component {
     }
     sendTypingEvent() {
         this.state.currentUser
-            .isTypingIn({ roomId: this.state.currentRoom.id })
+            .isTypingIn({ roomId: this.state.currentRoomId })
             .catch(error => console.error('error', error))
     }
 
     sendMessage(text) {
         this.state.currentUser.sendMessage({
             text,
-            roomId: this.state.currentRoom.id,
+            roomId: this.state.currentRoomId,
         })
     }
 
-    componentDidMount() {
-        const chatManager = new Chatkit.ChatManager({
+    chatMangerInit() {
+        this.chatManager = new Chatkit.ChatManager({
             instanceLocator: 'v1:us1:58197bf3-cd05-4562-ab6d-371e117fa29b',
             userId: this.props.currentUsername,
             tokenProvider: new Chatkit.TokenProvider({
                 url: 'http://localhost:3001/authenticate',
             }),
         })
-        chatManager
+    }
+    chatManagerLoad(roomId) {
+        this.chatManager
             .connect()
             .then(currentUser => {
-                console.log(currentUser);
                 this.setState({ currentUser })
                 this.setState({ currentUserTeams: currentUser.rooms })
-                console.log(currentUser.rooms);
                 return currentUser.subscribeToRoom({
-                    roomId: 15479319,
+                    roomId: roomId,
                     messageLimit: 100,
                     hooks: {
                         onNewMessage: message => {
@@ -104,24 +106,39 @@ class ChatScreen extends Component {
                 })
             })
             .then(currentRoom => {
-                console.log(currentRoom);
                 this.setState({ currentRoom })
             })
             .catch(error => console.error('error', error))
     }
 
-    listUserRooms() {
-        if( this.state.currentUserTeams.length > 0){
-            let HTML = '';
-            this.state.currentUserTeams.forEach((element, index, array) => {
-               HTML += `<li style="margin-bottom: 5px;" key=${element.id}> ${element.name} </li>`
-            });
-            document.getElementById('roomsList').innerHTML = HTML;
-        } else{
-            return ""
-        }     
+    componentDidMount() {
+        this.chatMangerInit();
+        this.chatManagerLoad(this.state.currentRoomId);
     }
 
+    onTeamChange(id) {
+        var _self = this;
+        const newRoom = this.state.currentUserTeams.filter(function (el) { return el.id === id; });
+        this.setState({currentRoomId : id});
+        this.chatManager
+            .connect()
+            .then(currentUser => {
+                this.setState({ currentUser })
+                this.setState({ currentUserTeams: currentUser.rooms })
+                return currentUser.fetchMessages({
+                    roomId: id,
+                }).then(messages => {
+                    this.setState({
+                        messages: messages,
+                    });
+                    _self.setState({currentRoom : newRoom});
+                  })
+                  .catch(err => {
+                    console.log(`Error fetching messages: ${err}`)
+                  })
+            })
+            .catch(error => console.error('error', error))
+    }
     render() {
 
         const styles = {
@@ -145,14 +162,10 @@ class ChatScreen extends Component {
                 },
                 textField: {
                     marginBottom: '10px'
-                },
-                li: {
-                    listStyleType: 'none',
-                    color: 'burlywood'
                 }
             },
             chatListContainer: {
-                padding: 20,
+                padding: '20px 0 0 20px',
                 width: '85%',
                 display: 'flex',
                 flexDirection: 'column',
@@ -177,13 +190,12 @@ class ChatScreen extends Component {
                         <FormControlLabel control={
                             <Checkbox icon={<LockOpen />} checkedIcon={<Lock />}  onChange={this.handlePrivacyChange} value="checkedH" />} />
                             <h4 style={styles.whosOnlineListContainer.h2Title}>Teams</h4>
-                            <div id="roomsList" style={styles.whosOnlineListContainer.li}>
-                                {this.listUserRooms()}
-                            </div>
-                            
+                            { this.state.currentUserTeams.length > 0 ? 
+                                <TeamList userTeams={this.state.currentUserTeams} onTeamChange={this.onTeamChange.bind(this)} />
+                                : ''}                            
                     </aside>
                     <section style={styles.chatListContainer}>
-                        <h2 style={styles.chatListContainer.h2Title}>#{this.state.currentRoom.name}</h2>
+                        <h2 style={styles.chatListContainer.h2Title}>{this.state.currentRoom.name}</h2>
                         <MessageList
                             messages={this.state.messages}
                             style={styles.chatList}
