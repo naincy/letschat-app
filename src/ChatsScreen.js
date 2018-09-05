@@ -3,6 +3,7 @@ import Chatkit from '@pusher/chatkit'
 import MessageList from './components/MessageList'
 import TeamList from './components/TeamList'
 import UserList from './components/UserList'
+import Members from './components/Members'
 import SendMessageForm from './components/SendMessageForm'
 import TypingIndicator from './components/TypingIndicator'
 import Input from '@material-ui/core/Input';
@@ -12,6 +13,9 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Lock from '@material-ui/icons/Lock';
 import LockOpen from '@material-ui/icons/LockOpen';
 import PersonAdd from '@material-ui/icons/PersonAdd';
+import Typography from '@material-ui/core/Typography';
+import People from '@material-ui/icons/People';
+import Popover from '@material-ui/core/Popover';
 
 class ChatScreen extends Component {
     constructor(props) {
@@ -27,7 +31,9 @@ class ChatScreen extends Component {
             currentUserFriends: {},
             currentRoomId: 15502954,
             addUser: false,
-            addusername: ''
+            addusername: '',
+            anchorEl: null,
+            teamMembers: []
         }
         this.sendMessage = this.sendMessage.bind(this)
         this.sendTypingEvent = this.sendTypingEvent.bind(this)
@@ -59,17 +65,21 @@ class ChatScreen extends Component {
     }
     addUser(e) {
         if(e.keyCode === 13) {
-            this.state.currentUser.addUserToRoom({
-                userId: this.state.addusername,
-                roomId: this.state.currentRoomId
-              })
-                .then(() => {
-                  console.log('Added keith to room 123')
+            if (this.state.addusername) {
+                this.state.currentUser.addUserToRoom({
+                    userId: this.state.addusername,
+                    roomId: this.state.currentRoomId
                 })
-                .catch(err => {
-                  console.log(`Error adding keith to room 123: ${err}`)
-                })
-            this.setState({addUser: false});
+                    .then(() => {
+                    console.log('Added keith to room 123')
+                    })
+                    .catch(err => {
+                    console.log(`Error adding keith to room 123: ${err}`)
+                    })
+                this.setState({addUser: false});
+            } else {
+                this.setState({addUser: false});
+            }
         }
     }
     createTeam(e) {
@@ -121,6 +131,7 @@ class ChatScreen extends Component {
                 this.setState({ currentUser })
                 this.setState({ currentUserTeams: currentUser.rooms })
                 this.setState({ currentUserFriends: friends})
+                this.getTeamMembers(roomId)
                 return currentUser.subscribeToRoom({
                     roomId: roomId,
                     messageLimit: 100,
@@ -178,16 +189,36 @@ class ChatScreen extends Component {
 
     onTeamChange(id) {
         const newRoom = this.state.currentUserTeams.filter(function (el) { return el.id === id; });
+        console.log('members', newRoom[0].userIds);
         this.setState({currentRoomId : id });
         this.setState({currentRoom : newRoom });
+        this.getTeamMembers(id);
         this.chatManagerLoadRoomMessages(id);
+    }
+
+    getTeamMembers(id) {
+        const teamData = this.state.currentUserTeams.filter(function (el) { return el.id === id; });
+        console.log(teamData[0].userIds);
+        this.setState({ teamMembers:teamData[0].userIds});
     }
 
     onFriendSelect(friendId) {
         console.log('ff',friendId);
     }
-    render() {
+    handleClick = event => {
+        this.setState({
+          anchorEl: event.currentTarget,
+        });
+      };
+    
+      handleClose = () => {
+        this.setState({
+          anchorEl: null,
+        });
+      };
 
+    render() {
+        const open = Boolean(this.state.anchorEl);
         const styles = {
             container: {
                 height: '100vh',
@@ -225,6 +256,10 @@ class ChatScreen extends Component {
                     marginRight: 20,
                     textAlign: 'end',
                     cursor: 'pointer'
+                },
+                listUser: {
+                    marginRight: 20,
+                    float: 'right',
                 }
             },
         }
@@ -255,6 +290,7 @@ class ChatScreen extends Component {
                     <section style={styles.chatListContainer}>
                         <h2 style={styles.chatListContainer.h2Title}>{this.state.currentRoom.name}</h2>
                         { this.state.currentUserTeams.length > 0 ?    
+                            <div>
                             <div style={styles.chatListContainer.addUser} onClick={this.handleAddUserClick}>
                             {this.state.addUser ? 
                                 <FormControl>
@@ -263,7 +299,33 @@ class ChatScreen extends Component {
                                     onKeyDown={this.addUser}
                                     onChange={this.handleAddUserChange} />
                                 </FormControl> : <PersonAdd /> }
-                            </div> : ''}
+                            </div>
+                            <div style={styles.chatListContainer.listUser}>
+                            <People
+                            aria-owns={open ? 'simple-popper' : null}
+                            aria-haspopup="true"
+                            variant="contained"
+                            onClick={this.handleClick}>
+                                    </People>
+                                    <Popover
+                                        id="simple-popper"
+                                        open={open}
+                                        anchorEl={this.state.anchorEl}
+                                        onClose={this.handleClose}
+                                        anchorOrigin={{
+                                        vertical: 'bottom',
+                                        horizontal: 'center',
+                                        }}
+                                        transformOrigin={{
+                                        vertical: 'top',
+                                        horizontal: 'center',
+                                        }}
+                                    >
+                                    <Members members={this.state.teamMembers}/>
+                                    </Popover>
+                                </div>
+                            </div>
+                             : ''}
                         <MessageList
                             messages={this.state.messages}
                             style={styles.chatList}
