@@ -11,6 +11,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Lock from '@material-ui/icons/Lock';
 import LockOpen from '@material-ui/icons/LockOpen';
+import PersonAdd from '@material-ui/icons/PersonAdd';
 
 class ChatScreen extends Component {
     constructor(props) {
@@ -24,13 +25,18 @@ class ChatScreen extends Component {
             teamprivacy: false,
             currentUserTeams: {},
             currentUserFriends: {},
-            currentRoomId: 15502954
+            currentRoomId: 15502954,
+            addUser: false,
+            addusername: ''
         }
         this.sendMessage = this.sendMessage.bind(this)
         this.sendTypingEvent = this.sendTypingEvent.bind(this)
         this.handlePrivacyChange = this.handlePrivacyChange.bind(this)
+        this.handleAddUserClick = this.handleAddUserClick.bind(this)
         this.handleChange = this.handleChange.bind(this)
         this.createTeam = this.createTeam.bind(this)
+        this.addUser = this.addUser.bind(this);
+        this.handleAddUserChange = this.handleAddUserChange.bind(this)
         this.chatManager = '';
     }
 
@@ -42,8 +48,29 @@ class ChatScreen extends Component {
     handleChange(e) {
         this.setState({ teamname: e.target.value })
     }
+    handleAddUserChange(e) {
+        this.setState({ addusername: e.target.value })
+    }
+    handleAddUserClick (e) {
+        this.setState({addUser: true});
+    }
     handlePrivacyChange(e, isChecked) {
         this.setState({ teamprivacy: isChecked })
+    }
+    addUser(e) {
+        if(e.keyCode === 13) {
+            this.state.currentUser.addUserToRoom({
+                userId: this.state.addusername,
+                roomId: this.state.currentRoomId
+              })
+                .then(() => {
+                  console.log('Added keith to room 123')
+                })
+                .catch(err => {
+                  console.log(`Error adding keith to room 123: ${err}`)
+                })
+            this.setState({addUser: false});
+        }
     }
     createTeam(e) {
         if(e.keyCode === 13) {
@@ -120,6 +147,12 @@ class ChatScreen extends Component {
             })
             .then(currentRoom => {
                 this.setState({ currentRoom })
+                if (this.state.currentUserTeams.length == 0) {
+                    console.log('disconnect');
+                    this.chatManager.disconnect()
+                    this.chatMangerInit();
+                    this.chatManagerLoad(this.state.currentRoomId);  
+                } 
             })
             .catch(error => console.error('error', error))
     }
@@ -188,6 +221,11 @@ class ChatScreen extends Component {
                     marginBottom: '10px',
                     backgroundColor: 'darkgray',
                 },
+                addUser: {
+                    marginRight: 20,
+                    textAlign: 'end',
+                    cursor: 'pointer'
+                }
             },
         }
         return (
@@ -216,6 +254,16 @@ class ChatScreen extends Component {
                     </aside>
                     <section style={styles.chatListContainer}>
                         <h2 style={styles.chatListContainer.h2Title}>{this.state.currentRoom.name}</h2>
+                        { this.state.currentUserTeams.length > 0 ?    
+                            <div style={styles.chatListContainer.addUser} onClick={this.handleAddUserClick}>
+                            {this.state.addUser ? 
+                                <FormControl>
+                                    <Input placeholder="Add user"   
+                                    value={this.state.addusername}
+                                    onKeyDown={this.addUser}
+                                    onChange={this.handleAddUserChange} />
+                                </FormControl> : <PersonAdd /> }
+                            </div> : ''}
                         <MessageList
                             messages={this.state.messages}
                             style={styles.chatList}

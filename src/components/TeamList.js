@@ -5,7 +5,7 @@ import LockOpen from '@material-ui/icons/LockOpen';
 class TeamList extends Component {
 
     handleClickEvent(event) {
-        console.log(event);
+        console.log('sjsj', event);
         this.props.onTeamChange(event.target.value);
     }
     render() {
