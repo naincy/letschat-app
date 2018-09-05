@@ -13,7 +13,6 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Lock from '@material-ui/icons/Lock';
 import LockOpen from '@material-ui/icons/LockOpen';
 import PersonAdd from '@material-ui/icons/PersonAdd';
-import Typography from '@material-ui/core/Typography';
 import People from '@material-ui/icons/People';
 import Popover from '@material-ui/core/Popover';
 
@@ -29,7 +28,7 @@ class ChatScreen extends Component {
             teamprivacy: false,
             currentUserTeams: {},
             currentUserFriends: {},
-            currentRoomId: 15502954,
+            currentRoomId: 15510124,
             addUser: false,
             addusername: '',
             anchorEl: null,
@@ -158,7 +157,7 @@ class ChatScreen extends Component {
             })
             .then(currentRoom => {
                 this.setState({ currentRoom })
-                if (this.state.currentUserTeams.length == 0) {
+                if (this.state.currentUserTeams.length === 0) {
                     console.log('disconnect');
                     this.chatManager.disconnect()
                     this.chatMangerInit();
@@ -189,10 +188,10 @@ class ChatScreen extends Component {
 
     onTeamChange(id) {
         const newRoom = this.state.currentUserTeams.filter(function (el) { return el.id === id; });
-        console.log('members', newRoom[0].userIds);
+        // console.log('members', newRoom[0].userIds);
         this.setState({currentRoomId : id });
         this.setState({currentRoom : newRoom });
-        this.getTeamMembers(id);
+        newRoom[0].userIds.length > 0 ? this.getTeamMembers(id) : '';
         this.chatManagerLoadRoomMessages(id);
     }
 
