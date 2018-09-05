@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import Chatkit from '@pusher/chatkit'
 import MessageList from './components/MessageList'
 import TeamList from './components/TeamList'
+import UserList from './components/UserList'
 import SendMessageForm from './components/SendMessageForm'
 import TypingIndicator from './components/TypingIndicator'
 import Input from '@material-ui/core/Input';
@@ -22,7 +23,8 @@ class ChatScreen extends Component {
             teamname: '',
             teamprivacy: false,
             currentUserTeams: {},
-            currentRoomId: 15479319
+            currentUserFriends: {},
+            currentRoomId: 15502954
         }
         this.sendMessage = this.sendMessage.bind(this)
         this.sendTypingEvent = this.sendTypingEvent.bind(this)
@@ -31,7 +33,12 @@ class ChatScreen extends Component {
         this.createTeam = this.createTeam.bind(this)
         this.chatManager = '';
     }
-      
+
+    componentDidMount() {
+        this.chatMangerInit();
+        this.chatManagerLoad(this.state.currentRoomId);
+    }
+
     handleChange(e) {
         this.setState({ teamname: e.target.value })
     }
@@ -47,6 +54,9 @@ class ChatScreen extends Component {
                 addUserIds: []
             }).then(room => {
                 this.setState({ teamname: '' })
+                let newList = this.state.currentUserTeams;
+                newList.push(room);
+                this.setState({ currentUserTeams: newList });
             })
             .catch(err => {
                 console.log(`Error creating room ${err}`)
@@ -64,6 +74,7 @@ class ChatScreen extends Component {
             text,
             roomId: this.state.currentRoomId,
         })
+        this.chatManagerLoadRoomMessages(this.state.currentRoomId);
     }
 
     chatMangerInit() {
@@ -79,8 +90,10 @@ class ChatScreen extends Component {
         this.chatManager
             .connect()
             .then(currentUser => {
+                const friends = currentUser.users.filter(function (el) { return el.id !== currentUser.id; });
                 this.setState({ currentUser })
                 this.setState({ currentUserTeams: currentUser.rooms })
+                this.setState({ currentUserFriends: friends})
                 return currentUser.subscribeToRoom({
                     roomId: roomId,
                     messageLimit: 100,
@@ -110,34 +123,35 @@ class ChatScreen extends Component {
             })
             .catch(error => console.error('error', error))
     }
-
-    componentDidMount() {
-        this.chatMangerInit();
-        this.chatManagerLoad(this.state.currentRoomId);
+    chatManagerLoadRoomMessages(roomId) {
+        this.chatManager
+        .connect()
+        .then(currentUser => {
+            this.setState({ currentUser })
+            this.setState({ currentUserTeams: currentUser.rooms })
+            return currentUser.fetchMessages({
+                roomId: roomId,
+            }).then(messages => {
+                this.setState({
+                    messages: messages,
+                });
+              })
+              .catch(err => {
+                console.log(`Error fetching messages: ${err}`)
+              })
+        })
+        .catch(error => console.error('error', error))
     }
 
     onTeamChange(id) {
-        var _self = this;
         const newRoom = this.state.currentUserTeams.filter(function (el) { return el.id === id; });
-        this.setState({currentRoomId : id});
-        this.chatManager
-            .connect()
-            .then(currentUser => {
-                this.setState({ currentUser })
-                this.setState({ currentUserTeams: currentUser.rooms })
-                return currentUser.fetchMessages({
-                    roomId: id,
-                }).then(messages => {
-                    this.setState({
-                        messages: messages,
-                    });
-                    _self.setState({currentRoom : newRoom});
-                  })
-                  .catch(err => {
-                    console.log(`Error fetching messages: ${err}`)
-                  })
-            })
-            .catch(error => console.error('error', error))
+        this.setState({currentRoomId : id });
+        this.setState({currentRoom : newRoom });
+        this.chatManagerLoadRoomMessages(id);
+    }
+
+    onFriendSelect(friendId) {
+        console.log('ff',friendId);
     }
     render() {
 
@@ -189,10 +203,16 @@ class ChatScreen extends Component {
                         </FormControl>
                         <FormControlLabel control={
                             <Checkbox icon={<LockOpen />} checkedIcon={<Lock />}  onChange={this.handlePrivacyChange} value="checkedH" />} />
-                            <h4 style={styles.whosOnlineListContainer.h2Title}>Teams</h4>
+                            { this.state.currentUserTeams.length > 0 ? 
+                                <h4 style={styles.whosOnlineListContainer.h2Title}>Teams</h4> : '' }
                             { this.state.currentUserTeams.length > 0 ? 
                                 <TeamList userTeams={this.state.currentUserTeams} onTeamChange={this.onTeamChange.bind(this)} />
-                                : ''}                            
+                                : ''}
+                            { this.state.currentUserFriends.length > 0 ? 
+                            <h4 style={styles.whosOnlineListContainer.h2Title}> Friends </h4> : ''}
+                            { this.state.currentUserFriends.length > 0 ? 
+                                <UserList users={this.state.currentUserFriends} onFriendSelect={this.onFriendSelect.bind(this)} />
+                                : ''}
                     </aside>
                     <section style={styles.chatListContainer}>
                         <h2 style={styles.chatListContainer.h2Title}>{this.state.currentRoom.name}</h2>
