@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import Person from '@material-ui/icons/Person';
 
 class Members extends Component {
 
@@ -21,7 +22,7 @@ class Members extends Component {
                 <ul style={styles.ul}>
                     {this.props.members.map((user, index) => (
                         <li key={index} value={user} style={styles.li}>
-                            {user}
+                            <Person /> {user}
                         </li>
                     ))}
                 </ul>

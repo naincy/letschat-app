@@ -130,7 +130,7 @@ class ChatScreen extends Component {
                 this.setState({ currentUser })
                 this.setState({ currentUserTeams: currentUser.rooms })
                 this.setState({ currentUserFriends: friends})
-                this.getTeamMembers(roomId)
+                if (currentUser.rooms.length > 0) this.getTeamMembers(roomId)
                 return currentUser.subscribeToRoom({
                     roomId: roomId,
                     messageLimit: 100,
@@ -158,7 +158,6 @@ class ChatScreen extends Component {
             .then(currentRoom => {
                 this.setState({ currentRoom })
                 if (this.state.currentUserTeams.length === 0) {
-                    console.log('disconnect');
                     this.chatManager.disconnect()
                     this.chatMangerInit();
                     this.chatManagerLoad(this.state.currentRoomId);  
@@ -188,17 +187,16 @@ class ChatScreen extends Component {
 
     onTeamChange(id) {
         const newRoom = this.state.currentUserTeams.filter(function (el) { return el.id === id; });
-        // console.log('members', newRoom[0].userIds);
         this.setState({currentRoomId : id });
-        this.setState({currentRoom : newRoom });
+        this.setState({currentRoom : newRoom[0] });
         newRoom[0].userIds.length > 0 ? this.getTeamMembers(id) : '';
         this.chatManagerLoadRoomMessages(id);
     }
 
-    getTeamMembers(id) {
+    getTeamMembers(id, flag=false) {
         const teamData = this.state.currentUserTeams.filter(function (el) { return el.id === id; });
-        console.log(teamData[0].userIds);
-        this.setState({ teamMembers:teamData[0].userIds});
+        const data = (flag) ? teamData[0] : teamData[0];
+        this.setState({ teamMembers: data.userIds});
     }
 
     onFriendSelect(friendId) {
@@ -320,6 +318,7 @@ class ChatScreen extends Component {
                                         horizontal: 'center',
                                         }}
                                     >
+                                    Members of Team <br />
                                     <Members members={this.state.teamMembers}/>
                                     </Popover>
                                 </div>
