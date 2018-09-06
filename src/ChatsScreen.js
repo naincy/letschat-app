@@ -237,6 +237,11 @@ class ChatScreen extends Component {
                 },
                 textField: {
                     marginBottom: '10px'
+                },
+                logout: {
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    float: 'right'
                 }
             },
             chatListContainer: {
@@ -265,6 +270,11 @@ class ChatScreen extends Component {
                 <div style={styles.chatContainer}>
                     <aside style={styles.whosOnlineListContainer}>
                         <h2 style={styles.whosOnlineListContainer.h2Title}>Capsule ChatKit</h2>
+                        {this.state.currentUser.name ? 
+                            <div><h5 style={styles.whosOnlineListContainer.h2Title}>
+                            Welcome, {this.state.currentUser.name}
+                            <a style={styles.whosOnlineListContainer.logout}>Logout</a>
+                        </h5></div> : '' }
                         <FormControl>
                             <Input placeholder="Create Team"   
                             value={this.state.teamname}
