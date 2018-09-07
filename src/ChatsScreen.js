@@ -43,6 +43,7 @@ class ChatScreen extends Component {
         this.addUser = this.addUser.bind(this);
         this.handleAddUserChange = this.handleAddUserChange.bind(this)
         this.chatManager = '';
+        this.onLogout = this.onLogout.bind(this);
     }
 
     componentDidMount() {
@@ -50,18 +51,28 @@ class ChatScreen extends Component {
         this.chatManagerLoad(this.state.currentRoomId);
     }
 
+    onLogout(e) {
+        e.preventDefault();
+        this.chatManager.disconnect();
+        this.props.onLogout();
+    }
+
     handleChange(e) {
         this.setState({ teamname: e.target.value })
     }
+
     handleAddUserChange(e) {
         this.setState({ addusername: e.target.value })
     }
+
     handleAddUserClick (e) {
         this.setState({addUser: true});
     }
+
     handlePrivacyChange(e, isChecked) {
         this.setState({ teamprivacy: isChecked })
     }
+
     addUser(e) {
         if(e.keyCode === 13) {
             if (this.state.addusername) {
@@ -81,6 +92,7 @@ class ChatScreen extends Component {
             }
         }
     }
+
     createTeam(e) {
         if(e.keyCode === 13) {
             this.state.currentUser
@@ -99,6 +111,7 @@ class ChatScreen extends Component {
             })
         }
     }
+
     sendTypingEvent() {
         this.state.currentUser
             .isTypingIn({ roomId: this.state.currentRoomId })
@@ -122,6 +135,7 @@ class ChatScreen extends Component {
             }),
         })
     }
+
     chatManagerLoad(roomId) {
         this.chatManager
             .connect()
@@ -165,6 +179,7 @@ class ChatScreen extends Component {
             })
             .catch(error => console.error('error', error))
     }
+
     chatManagerLoadRoomMessages(roomId) {
         this.chatManager
         .connect()
@@ -202,17 +217,14 @@ class ChatScreen extends Component {
     onFriendSelect(friendId) {
         console.log('ff',friendId);
     }
-    handleClick = event => {
-        this.setState({
-          anchorEl: event.currentTarget,
-        });
-      };
     
-      handleClose = () => {
-        this.setState({
-          anchorEl: null,
-        });
-      };
+    handleClick = event => {
+        this.setState({anchorEl: event.currentTarget});
+    };
+    
+    handleClose = () => {
+        this.setState({anchorEl: null});
+    };
 
     render() {
         const open = Boolean(this.state.anchorEl);
@@ -255,13 +267,19 @@ class ChatScreen extends Component {
                     backgroundColor: 'darkgray',
                 },
                 addUser: {
-                    marginRight: 20,
+                    marginRight: 10,
                     textAlign: 'end',
                     cursor: 'pointer'
                 },
                 listUser: {
-                    marginRight: 20,
-                    float: 'right',
+                    marginRight: 10,
+                },
+                panel: {
+                    display: 'flex',
+                    flexDirection: 'row-reverse'
+                },
+                modal: {
+                    padding: 10
                 }
             },
         }
@@ -273,7 +291,7 @@ class ChatScreen extends Component {
                         {this.state.currentUser.name ? 
                             <div><h5 style={styles.whosOnlineListContainer.h2Title}>
                             Welcome, {this.state.currentUser.name}
-                            <a style={styles.whosOnlineListContainer.logout}>Logout</a>
+                            <a style={styles.whosOnlineListContainer.logout} onClick={this.onLogout}>Logout</a>
                         </h5></div> : '' }
                         <FormControl>
                             <Input placeholder="Create Team"   
@@ -297,9 +315,9 @@ class ChatScreen extends Component {
                     <section style={styles.chatListContainer}>
                         <h2 style={styles.chatListContainer.h2Title}>{this.state.currentRoom.name}</h2>
                         { this.state.currentUserTeams.length > 0 ?    
-                            <div>
+                            <div style={styles.chatListContainer.panel}>
                             <div style={styles.chatListContainer.addUser} onClick={this.handleAddUserClick}>
-                            {this.state.addUser ? 
+                                {this.state.addUser ? 
                                 <FormControl>
                                     <Input placeholder="Add user"   
                                     value={this.state.addusername}
@@ -320,13 +338,14 @@ class ChatScreen extends Component {
                                         anchorEl={this.state.anchorEl}
                                         onClose={this.handleClose}
                                         anchorOrigin={{
-                                        vertical: 'bottom',
-                                        horizontal: 'center',
+                                            vertical: 'bottom',
+                                            horizontal: 'center',
                                         }}
                                         transformOrigin={{
-                                        vertical: 'top',
-                                        horizontal: 'center',
+                                            vertical: 'top',
+                                            horizontal: 'center',
                                         }}
+                                        style={styles.chatListContainer.modal}
                                     >
                                     Members of Team <br />
                                     <Members members={this.state.teamMembers}/>
