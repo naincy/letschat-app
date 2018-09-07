@@ -35,7 +35,7 @@ constructor(props) {
       <div className="App">
         <Grid container spacing={24} style={styles.gridContainer} >
           <Grid item xs={12}>
-            <img src="images/chat.png" />
+            <img src="images/chat.png" alt="logo" />
             <Typography variant="headline" component="h1" className="App-title" />
             <FormControl>
               <Input placeholder="Enter username" 

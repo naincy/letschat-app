@@ -5,7 +5,6 @@ import LockOpen from '@material-ui/icons/LockOpen';
 class TeamList extends Component {
 
     handleClickEvent(event) {
-        console.log('sjsj', event);
         this.props.onTeamChange(event.target.value);
     }
     render() {
@@ -15,12 +14,12 @@ class TeamList extends Component {
             },
             ul: {
                 listStyle: 'none',
+                marginTop: 5
             },
             li: {
-                marginTop: 13,
-                marginBottom: 13,
+                marginBottom: 5,
                 color: 'indigo',
-                cursor: 'pointer'
+                cursor: 'pointer',
             }
         }
         return (
@@ -32,7 +31,9 @@ class TeamList extends Component {
             >
                 <ul style={styles.ul}>
                     {this.props.userTeams.map((team) => (
-                        <li key={team.id} value={team.id} style={styles.li} onClick={this.handleClickEvent.bind(this)}>
+                        <li key={team.id} value={team.id} style={styles.li}
+                            className={this.props.currentTeamId === team.id ? 'team-active' : ''}
+                            onClick={this.handleClickEvent.bind(this)}>
                             {team.name}
                             { team.isPrivate ? <Lock /> : <LockOpen />}
                         </li>

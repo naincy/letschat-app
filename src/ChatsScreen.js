@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import Chatkit from '@pusher/chatkit'
 import MessageList from './components/MessageList'
 import TeamList from './components/TeamList'
-import UserList from './components/UserList'
-import Members from './components/Members'
+import FriendsList from './components/FriendsList'
+import TeamMembers from './components/TeamMembers'
 import SendMessageForm from './components/SendMessageForm'
 import TypingIndicator from './components/TypingIndicator'
 import Input from '@material-ui/core/Input';
@@ -28,11 +28,12 @@ class ChatScreen extends Component {
             teamprivacy: false,
             currentUserTeams: {},
             currentUserFriends: {},
-            currentRoomId: 15510124,
+            currentRoomId: 15644813,
             addUser: false,
             addusername: '',
             anchorEl: null,
-            teamMembers: []
+            teamMembers: [],
+            currentFriendId: ''
         }
         this.sendMessage = this.sendMessage.bind(this)
         this.sendTypingEvent = this.sendTypingEvent.bind(this)
@@ -44,6 +45,7 @@ class ChatScreen extends Component {
         this.handleAddUserChange = this.handleAddUserChange.bind(this)
         this.chatManager = '';
         this.onLogout = this.onLogout.bind(this);
+        this.onFriendChat = this.onFriendChat.bind(this)
     }
 
     componentDidMount() {
@@ -76,17 +78,9 @@ class ChatScreen extends Component {
     addUser(e) {
         if(e.keyCode === 13) {
             if (this.state.addusername) {
-                this.state.currentUser.addUserToRoom({
-                    userId: this.state.addusername,
-                    roomId: this.state.currentRoomId
-                })
-                    .then(() => {
-                    console.log('Added keith to room 123')
-                    })
-                    .catch(err => {
-                    console.log(`Error adding keith to room 123: ${err}`)
-                    })
                 this.setState({addUser: false});
+                this.chatManagerCreateUser(this.state.addusername, this.state.currentRoomId);
+                this.getTeamMembers( this.state.currentRoomId);
             } else {
                 this.setState({addUser: false});
             }
@@ -95,20 +89,7 @@ class ChatScreen extends Component {
 
     createTeam(e) {
         if(e.keyCode === 13) {
-            this.state.currentUser
-                .createRoom({
-                name: this.state.teamname,
-                private: this.state.teamprivacy,
-                addUserIds: []
-            }).then(room => {
-                this.setState({ teamname: '' })
-                let newList = this.state.currentUserTeams;
-                newList.push(room);
-                this.setState({ currentUserTeams: newList });
-            })
-            .catch(err => {
-                console.log(`Error creating room ${err}`)
-            })
+            this.chatManagerCreateRoom(this.state.teamname, this.state.teamprivacy);
         }
     }
 
@@ -133,6 +114,38 @@ class ChatScreen extends Component {
             tokenProvider: new Chatkit.TokenProvider({
                 url: 'http://localhost:3001/authenticate',
             }),
+        })
+    }
+
+    chatManagerCreateRoom(roomName, privacy=false, individual=false) {
+        this.state.currentUser
+                .createRoom({
+                name: roomName,
+                private: privacy,
+                addUserIds: []
+            }).then(room => {
+                if (!individual) {
+                    this.setState({ teamname: '' })
+                    let newList = this.state.currentUserTeams;
+                    newList.push(room);
+                    this.setState({ currentUserTeams: newList });
+                } else {
+                    return room.id;
+                }
+            })
+            .catch(err => {
+                console.log(`Error creating room ${err}`)
+            })
+    }
+
+    chatManagerCreateUser(username, roomId) {
+        this.state.currentUser.addUserToRoom({
+            userId: username,
+            roomId: roomId
+        })
+        .then(() => {console.log('Added user')
+        })
+        .catch(err => {console.log(`Error adding keith to room 123: ${err}`)
         })
     }
 
@@ -201,6 +214,7 @@ class ChatScreen extends Component {
     }
 
     onTeamChange(id) {
+        this.setState({currentFriendId: ''})
         const newRoom = this.state.currentUserTeams.filter(function (el) { return el.id === id; });
         this.setState({currentRoomId : id });
         this.setState({currentRoom : newRoom[0] });
@@ -211,11 +225,20 @@ class ChatScreen extends Component {
     getTeamMembers(id, flag=false) {
         const teamData = this.state.currentUserTeams.filter(function (el) { return el.id === id; });
         const data = (flag) ? teamData[0] : teamData[0];
-        this.setState({ teamMembers: data.userIds});
+        setTimeout(()=>{ 
+            this.setState({ teamMembers: data.userIds});
+        }, 2000);
+        
     }
 
-    onFriendSelect(friendId) {
-        console.log('ff',friendId);
+    onFriendChat(friendId) {
+        this.setState({currentFriendId: friendId});
+        this.setState({currentRoomId: ''});
+        // create private room for chat, add user and load messages
+        // const roomId = this.chatManagerCreateRoom(friendId+'-'+this.state.currentUser.name, true);
+        // this.chatManagerCreateUser(friendId, roomId);
+        // this.chatManagerLoadRoomMessages(friendId);
+        this.setState({messages: []});
     }
     
     handleClick = event => {
@@ -239,13 +262,13 @@ class ChatScreen extends Component {
                 flex: 1,
             },
             whosOnlineListContainer: {
-                width: '300px',
+                width: 240,
                 flex: 'none',
-                padding: 20,
+                padding: 15,
                 backgroundColor: 'lightgoldenrodyellow',
                 color: 'black',
                 logoImage: {
-                    marginLeft: 90,
+                    marginLeft: 60,
                     height: 100
                 },
                 textField: {
@@ -255,6 +278,10 @@ class ChatScreen extends Component {
                     textDecoration: 'underline',
                     cursor: 'pointer',
                     float: 'right'
+                },
+                h2Title: {
+                    marginTop: 15,
+                    marginBottom: 5
                 }
             },
             chatListContainer: {
@@ -294,7 +321,7 @@ class ChatScreen extends Component {
             <div style={styles.container}>
                 <div style={styles.chatContainer}>
                     <aside style={styles.whosOnlineListContainer}>
-                        <img src="images/chat.png" style={styles.whosOnlineListContainer.logoImage}/>
+                        <img src="images/chat.png" alt="logo" style={styles.whosOnlineListContainer.logoImage}/>
                         {this.state.currentUser.name ? 
                             <div>
                                 <h5 style={styles.whosOnlineListContainer.h2Title}>
@@ -308,22 +335,25 @@ class ChatScreen extends Component {
                             onChange={this.handleChange} />
                         </FormControl>
                         <FormControlLabel control={
-                            <Checkbox icon={<LockOpen />} checkedIcon={<Lock />}  onChange={this.handlePrivacyChange} value="checkedH" />} />
+                            <Checkbox icon={<LockOpen />} checkedIcon={<Lock />} onChange={this.handlePrivacyChange} value="checkedH" />} />
                             { this.state.currentUserTeams.length > 0 ? 
-                                <h4 style={styles.whosOnlineListContainer.h2Title}>Teams</h4> : '' }
+                                <div><h4 style={styles.whosOnlineListContainer.h2Title}>Teams</h4><hr /></div> : '' }
+                            
                             { this.state.currentUserTeams.length > 0 ? 
-                                <TeamList userTeams={this.state.currentUserTeams} onTeamChange={this.onTeamChange.bind(this)} />
+                                <TeamList userTeams={this.state.currentUserTeams} currentTeamId={this.state.currentRoomId} onTeamChange={this.onTeamChange.bind(this)} />
                                 : ''}
                             { this.state.currentUserFriends.length > 0 ? 
-                            <h4 style={styles.whosOnlineListContainer.h2Title}> Friends </h4> : ''}
+                            <div><h4 style={styles.whosOnlineListContainer.h2Title}> Friends </h4><hr /></div> : ''}
                             { this.state.currentUserFriends.length > 0 ? 
-                                <UserList users={this.state.currentUserFriends} onFriendSelect={this.onFriendSelect.bind(this)} />
+                                <FriendsList friendsList={this.state.currentUserFriends} currentFriendId={this.state.currentFriendId} onFriendChat={this.onFriendChat.bind(this)} />
                                 : ''}
                     </aside>
                     <section style={styles.chatListContainer}>
                         <div style={styles.chatListContainer.section}>
-                        <h2 style={styles.chatListContainer.h2Title}>{this.state.currentRoom.name}</h2>
-                        { this.state.currentUserTeams.length > 0 ?    
+                        { !this.state.currentFriendId ?
+                            <h2 style={styles.chatListContainer.h2Title}>Lets's chat in {this.state.currentRoom.name} Team</h2>
+                            : <h2 style={styles.chatListContainer.h2Title}>Lets's chat with {this.state.currentFriendId}</h2>}
+                        { this.state.currentUserTeams.length > 0 && !this.state.currentFriendId ?    
                             <div style={styles.chatListContainer.panel}>
                             <div style={styles.chatListContainer.addUser} onClick={this.handleAddUserClick}>
                                 {this.state.addUser ? 
@@ -354,19 +384,17 @@ class ChatScreen extends Component {
                                             vertical: 'top',
                                             horizontal: 'center',
                                         }}
-                                        style={styles.chatListContainer.modal}
                                     >
-                                    Members of Team <br />
-                                    <Members members={this.state.teamMembers}/>
+                                    <h6 style={styles.chatListContainer.modal}>Members of Team </h6>
+                                    <TeamMembers members={this.state.teamMembers}/>
                                     </Popover>
                                 </div>
                             </div>
                              : ''}
                             </div>
-                        <MessageList
-                            messages={this.state.messages}
-                            style={styles.chatList}
-                        />
+                            { !this.state.currentFriendId ? 
+                                <MessageList messages={this.state.messages} style={styles.chatList}/> :
+                                 <h4 className="under-maintain">Under Maintenance</h4> }
                         <TypingIndicator usersWhoAreTyping={this.state.usersWhoAreTyping} />
                         <SendMessageForm
                             onSubmit={this.sendMessage}

@@ -1,12 +1,11 @@
 import React, { Component } from 'react'
 
-class UserList extends Component {
+class FriendsList extends Component {
 
     handleClick(event) {
-        console.log(event.target);
-        console.log(event.target.value);
-        this.props.onFriendSelect(event.target.value);
+        this.props.onFriendChat(event.target.getAttribute('value'));
     }
+
     render() {
         const styles = {
             container: {
@@ -14,12 +13,12 @@ class UserList extends Component {
             },
             ul: {
                 listStyle: 'none',
+                marginTop: 5
             },
             li: {
-                marginTop: 13,
-                marginBottom: 13,
+                marginBottom: 5,
                 color: 'indigo',
-                cursor: 'pointer'
+                cursor: 'pointer',
             }
         }
         return (
@@ -30,9 +29,11 @@ class UserList extends Component {
                 }}
             >
                 <ul style={styles.ul}>
-                    {this.props.users.map((user) => (
-                        <li key={user.id} value={user.id} style={styles.li} onClick={this.handleClick.bind(this)}>
-                            {user.name}
+                    {this.props.friendsList.map((friend) => (
+                        <li key={friend.id} value={friend.id} style={styles.li}
+                            className={this.props.currentFriendId === friend.id ? 'team-active' : ''}
+                            onClick={this.handleClick.bind(this)}>
+                            {friend.name}
                         </li>
                     ))}
                 </ul>
@@ -41,4 +42,4 @@ class UserList extends Component {
     }
 }
 
-export default UserList
+export default FriendsList

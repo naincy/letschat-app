@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import Person from '@material-ui/icons/Person';
 
-class Members extends Component {
+class TeamMembers extends Component {
 
     render() {
         const styles = {
@@ -12,8 +12,6 @@ class Members extends Component {
                 listStyle: 'none',
             },
             li: {
-                marginTop: 13,
-                marginBottom: 13,
                 color: 'burlywood',
             }
         }
@@ -31,4 +29,4 @@ class Members extends Component {
     }
 }
 
-export default Members
+export default TeamMembers

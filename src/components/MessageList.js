@@ -4,7 +4,7 @@ class MessagesList extends Component {
     render() {
         const styles = {
             container: {
-                overflow: 'scroll',
+                overflow: 'auto',
                 flex: 1,
                 marginLeft: 20
             },
