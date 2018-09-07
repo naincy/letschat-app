@@ -18,7 +18,7 @@ class UserList extends Component {
             li: {
                 marginTop: 13,
                 marginBottom: 13,
-                color: 'burlywood',
+                color: 'indigo',
                 cursor: 'pointer'
             }
         }

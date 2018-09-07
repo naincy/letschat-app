@@ -4,8 +4,9 @@ class MessagesList extends Component {
     render() {
         const styles = {
             container: {
-                overflow: 'auto',
+                overflow: 'scroll',
                 flex: 1,
+                marginLeft: 20
             },
             ul: {
                 listStyle: 'none',

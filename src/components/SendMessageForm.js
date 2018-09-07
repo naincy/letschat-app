@@ -25,7 +25,7 @@ class SendMessageForm extends Component {
             container: {
                 padding: 10,
                 borderTop: '1px #4C758F solid',
-                backgroundColor: 'white'
+                backgroundColor: '#f2f2f2'
             },
             form: {
                 display: 'flex',

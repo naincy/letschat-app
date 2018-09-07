@@ -242,10 +242,11 @@ class ChatScreen extends Component {
                 width: '300px',
                 flex: 'none',
                 padding: 20,
-                backgroundColor: 'darkcyan',
-                color: 'white',
-                h2Title: {
-                    marginBottom: '10px'
+                backgroundColor: 'lightgoldenrodyellow',
+                color: 'black',
+                logoImage: {
+                    marginLeft: 90,
+                    height: 100
                 },
                 textField: {
                     marginBottom: '10px'
@@ -257,14 +258,12 @@ class ChatScreen extends Component {
                 }
             },
             chatListContainer: {
-                padding: '20px 0 0 20px',
+                padding: '20px 0 0',
                 width: '85%',
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundColor: 'lightgray',
                 h2Title: {
-                    marginBottom: '10px',
-                    backgroundColor: 'darkgray',
+                    marginLeft: 20,
                 },
                 addUser: {
                     marginRight: 10,
@@ -276,7 +275,15 @@ class ChatScreen extends Component {
                 },
                 panel: {
                     display: 'flex',
-                    flexDirection: 'row-reverse'
+                    flexDirection: 'row-reverse',
+                    position: 'absolute',
+                    right: 0,
+                    marginTop: 7
+                },
+                section: {
+                    display: 'flex',
+                    backgroundColor: '#f2f2f2',
+                    padding: 2
                 },
                 modal: {
                     padding: 10
@@ -287,9 +294,10 @@ class ChatScreen extends Component {
             <div style={styles.container}>
                 <div style={styles.chatContainer}>
                     <aside style={styles.whosOnlineListContainer}>
-                        <h2 style={styles.whosOnlineListContainer.h2Title}>Capsule ChatKit</h2>
+                        <img src="images/chat.png" style={styles.whosOnlineListContainer.logoImage}/>
                         {this.state.currentUser.name ? 
-                            <div><h5 style={styles.whosOnlineListContainer.h2Title}>
+                            <div>
+                                <h5 style={styles.whosOnlineListContainer.h2Title}>
                             Welcome, {this.state.currentUser.name}
                             <a style={styles.whosOnlineListContainer.logout} onClick={this.onLogout}>Logout</a>
                         </h5></div> : '' }
@@ -313,6 +321,7 @@ class ChatScreen extends Component {
                                 : ''}
                     </aside>
                     <section style={styles.chatListContainer}>
+                        <div style={styles.chatListContainer.section}>
                         <h2 style={styles.chatListContainer.h2Title}>{this.state.currentRoom.name}</h2>
                         { this.state.currentUserTeams.length > 0 ?    
                             <div style={styles.chatListContainer.panel}>
@@ -353,6 +362,7 @@ class ChatScreen extends Component {
                                 </div>
                             </div>
                              : ''}
+                            </div>
                         <MessageList
                             messages={this.state.messages}
                             style={styles.chatList}

@@ -14,7 +14,6 @@ class App extends Component {
   }
 
   onUserLogout() {
-    console.log('logout');
     this.setState({
       currentUsername: '',
       currentScreen: 'WhatIsYourUsernameScreen'

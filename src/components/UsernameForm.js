@@ -35,9 +35,8 @@ constructor(props) {
       <div className="App">
         <Grid container spacing={24} style={styles.gridContainer} >
           <Grid item xs={12}>
-            <Typography variant="headline" component="h1" className="App-title">
-              Capsule Project
-            </Typography>
+            <img src="images/chat.png" />
+            <Typography variant="headline" component="h1" className="App-title" />
             <FormControl>
               <Input placeholder="Enter username" 
                 onKeyDown={this.onSubmit.bind(this)}
