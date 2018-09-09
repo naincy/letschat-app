@@ -15,6 +15,8 @@ import LockOpen from '@material-ui/icons/LockOpen';
 import PersonAdd from '@material-ui/icons/PersonAdd';
 import People from '@material-ui/icons/People';
 import Popover from '@material-ui/core/Popover';
+import DirectionsRun from '@material-ui/icons/DirectionsRun'
+import Delete from '@material-ui/icons/Delete'
 
 class ChatScreen extends Component {
     defaultRoomId = 15759972;
@@ -48,6 +50,8 @@ class ChatScreen extends Component {
         this.chatManager = '';
         this.onLogout = this.onLogout.bind(this);
         this.onFriendChat = this.onFriendChat.bind(this)
+        this.leaveRoom = this.leaveRoom.bind(this)
+        this.deleteRoom = this.deleteRoom.bind(this)
         localStorage.setItem('subscribedRooms', JSON.stringify(this.userSubscriptions))
     }
 
@@ -156,7 +160,6 @@ class ChatScreen extends Component {
         this.chatManager
             .connect()
             .then(currentUser => {
-                console.log(currentUser);
                 const friends = currentUser.users.filter(function (el) { return el.id !== currentUser.id; });
                 this.setState({ currentUser })
                 this.setState({ currentUserTeams: currentUser.rooms })
@@ -254,7 +257,6 @@ class ChatScreen extends Component {
 
     handleTeamSubscription(roomid) {
         const subscribed = JSON.parse(localStorage.getItem('subscribedRooms'))
-        console.log(subscribed);
         const isSubscribed = subscribed.indexOf(roomid);
         if (isSubscribed < 0) {
             this.userSubscriptions.push(roomid)
@@ -281,7 +283,41 @@ class ChatScreen extends Component {
         // this.chatManagerLoadRoomMessages(friendId);
         this.setState({messages: []});
     }
-    
+
+    leaveRoom() {
+        const teams = this.state.currentUserTeams
+        const defaultId = this.defaultRoomId
+        this.state.currentUser.leaveRoom({ roomId: this.state.currentRoomId })
+        .then(room => {
+            console.log(`Left room with ID: ${room.id}`)
+            const defaultRoom = teams.filter(function (el) { return el.id === defaultId });
+            this.setState({currentRoom : defaultRoom[0] });
+            this.setState({currentRoomId: defaultId})
+            const newTeams = teams.filter(function (el) { return el.id !== room.id; });
+            this.setState({currentUserTeams : newTeams})
+        })
+        .catch(err => {
+            console.log(`Error leaving room: ${err}`)
+        })
+    }
+
+    deleteRoom() {
+        const teams = this.state.currentUserTeams
+        const defaultId = this.defaultRoomId
+        const delRoom = this.state.currentRoomId 
+        this.state.currentUser.deleteRoom({ roomId: delRoom })
+        .then( () => {
+            const defaultRoom = teams.filter(function (el) { return el.id === defaultId });
+            this.setState({currentRoom : defaultRoom[0] });
+            this.setState({currentRoomId: defaultId})
+            const newTeams = teams.filter(function (el) { return el.id !== delRoom });
+            this.setState({currentUserTeams : newTeams})
+        })
+        .catch(err => {
+            console.log(`Error deleting room: ${err}`)
+        })
+    }
+
     handleClick = event => {
         this.setState({anchorEl: event.currentTarget});
     };
@@ -336,10 +372,18 @@ class ChatScreen extends Component {
                 addUser: {
                     marginRight: 10,
                     textAlign: 'end',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    color: 'green'
                 },
                 listUser: {
                     marginRight: 10,
+                    cursor: 'pointer',
+                    color: 'cornflowerblue'
+                },
+                delete: {
+                    marginRight: 10,
+                    cursor: 'pointer',
+                    color: 'crimson'
                 },
                 panel: {
                     display: 'flex',
@@ -396,6 +440,14 @@ class ChatScreen extends Component {
                             : <h2 style={styles.chatListContainer.h2Title}>Lets's chat with {this.state.currentFriendId}</h2>}
                         { this.state.currentUserTeams.length > 0 && !this.state.currentFriendId ?    
                             <div style={styles.chatListContainer.panel}>
+                            {this.state.currentRoomId !== this.defaultRoomId ?
+                                <div>
+                                    {this.state.currentRoom.createdByUserId === this.state.currentUser.name ? 
+                                        <div style={styles.chatListContainer.delete}> <Delete onClick={this.deleteRoom}/></div>
+                                    : <div style={styles.chatListContainer.delete}> <DirectionsRun onClick={this.leaveRoom}/></div>
+                                    }
+                                 </div>
+                            : ''}
                             <div style={styles.chatListContainer.addUser} onClick={this.handleAddUserClick}>
                                 {this.state.addUser ? 
                                 <FormControl>
