@@ -75,7 +75,7 @@ class ChatScreen extends Component {
     }
 
     handleAddUserClick (e) {
-        this.setState({addUser: true});
+        this.setState({addUser: true, addusername: ''});
     }
 
     handlePrivacyChange(e, isChecked) {
@@ -295,6 +295,7 @@ class ChatScreen extends Component {
             this.setState({currentRoomId: defaultId})
             const newTeams = teams.filter(function (el) { return el.id !== room.id; });
             this.setState({currentUserTeams : newTeams})
+            this.chatManagerLoadRoomMessages(defaultId)
         })
         .catch(err => {
             console.log(`Error leaving room: ${err}`)
@@ -312,6 +313,7 @@ class ChatScreen extends Component {
             this.setState({currentRoomId: defaultId})
             const newTeams = teams.filter(function (el) { return el.id !== delRoom });
             this.setState({currentUserTeams : newTeams})
+            this.chatManagerLoadRoomMessages(defaultId)
         })
         .catch(err => {
             console.log(`Error deleting room: ${err}`)
@@ -389,8 +391,7 @@ class ChatScreen extends Component {
                     display: 'flex',
                     flexDirection: 'row-reverse',
                     position: 'absolute',
-                    right: 0,
-                    marginTop: 7
+                    right: 0
                 },
                 section: {
                     display: 'flex',
@@ -436,8 +437,8 @@ class ChatScreen extends Component {
                     <section style={styles.chatListContainer}>
                         <div style={styles.chatListContainer.section}>
                         { !this.state.currentFriendId ?
-                            <h2 style={styles.chatListContainer.h2Title}>Lets's chat in {this.state.currentRoom.name} Team</h2>
-                            : <h2 style={styles.chatListContainer.h2Title}>Lets's chat with {this.state.currentFriendId}</h2>}
+                            <h3 style={styles.chatListContainer.h2Title}>Lets's chat in {this.state.currentRoom.name} Team</h3>
+                            : <h3 style={styles.chatListContainer.h2Title}>Lets's chat with {this.state.currentFriendId}</h3>}
                         { this.state.currentUserTeams.length > 0 && !this.state.currentFriendId ?    
                             <div style={styles.chatListContainer.panel}>
                             {this.state.currentRoomId !== this.defaultRoomId ?
