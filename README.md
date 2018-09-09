@@ -10,9 +10,11 @@ Following functionalities are implemented
 * User can see their friends list
 * User can see the members of the team which he is authorized
 * User can chat with team which he is authorzed
+* User can Logout
 
 ## To Start the App
 
 To run the application do the following steps:
 * <code>npm i</code> which will help to install the dependencies.
 * <code>npm run start</code> run this for development.
+* <code>npm run test</code> run test cases.
