@@ -46,7 +46,6 @@ app.post('/createTeam', (req, res) => {
 })
 
 app.post('/authenticate', (req, res) => {
-  console.log('from Auth');
   const authData = chatkit.authenticate({ userId: req.query.user_id })
   res.status(authData.status).send(authData.body)
 })
