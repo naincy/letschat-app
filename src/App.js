@@ -1,50 +1,52 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import UsernameForm from './components/UsernameForm'
 import ChatScreen from './ChatsScreen'
+import {connect} from 'react-redux'
 
 class App extends Component {
-  constructor() {
-    super()
+  static propTypes = {
+    dispatch: PropTypes.func.isRequired,
+    screen: PropTypes.string,
+  };
+
+  constructor(props) {
+    super(props)
     this.state = {
-      currentUsername: '',
-      currentScreen: 'WhatIsYourUsernameScreen'
+      currentUsername: ''
     }
     this.onUsernameSubmitted = this.onUsernameSubmitted.bind(this)
     this.onUserLogout = this.onUserLogout.bind(this)
   }
 
-  onUserLogout() {
-    this.setState({
-      currentUsername: '',
-      currentScreen: 'WhatIsYourUsernameScreen'
-    })
+  onUsernameSubmitted(username) {
+    this.props.dispatch({
+      type: 'GET_USERNAME',
+      username
+    });
   }
 
-  onUsernameSubmitted(username) {
-    fetch('http://localhost:3001/users', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username }),
-    })
-      .then(response => {
-        this.setState({
-          currentUsername: username,
-          currentScreen: 'ChatScreen'
-        })
-      })
-      .catch(error => console.error('error', error))
+  onUserLogout() {
+    this.props.dispatch({
+      type: 'LOGOUT_USER'
+    });
   }
 
   render() {
-    if (this.state.currentScreen === 'WhatIsYourUsernameScreen') {
+    const screen_ = this.props.screen || 'WhatIsYourUsernameScreen'
+    const username_ = this.props.currentUsername || '';
+    if (screen_ === 'WhatIsYourUsernameScreen') {
       return <UsernameForm onSubmit={this.onUsernameSubmitted} />
     }
-   if (this.state.currentScreen === 'ChatScreen') {
-     return <ChatScreen currentUsername={this.state.currentUsername} onLogout={this.onUserLogout} />
-   }
+    if (screen_ === 'ChatScreen') {
+      return <ChatScreen currentUsername={username_} onLogout={this.onUserLogout} />
+    }
   }
 }
 
-export default App
+const mapStateToProps = (state) => ({
+  screen: state.screen,
+  currentUsername : state.username
+});
+
+export default connect(mapStateToProps) (App)
