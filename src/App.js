@@ -30,12 +30,14 @@ class App extends Component {
     this.props.dispatch({
       type: 'LOGOUT_USER'
     });
+    localStorage.removeItem('subscribedRooms');
   }
 
   render() {
     const screen_ = this.props.screen || 'WhatIsYourUsernameScreen'
     const username_ = this.props.currentUsername || '';
     if (screen_ === 'WhatIsYourUsernameScreen') {
+      localStorage.removeItem('subscribedRooms');
       return <UsernameForm onSubmit={this.onUsernameSubmitted} />
     }
     if (screen_ === 'ChatScreen') {

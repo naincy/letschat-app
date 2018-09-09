@@ -17,6 +17,11 @@ class MessagesList extends Component {
             },
             senderUsername: {
                 fontWeight: 'bold',
+                color: 'brown'
+            },
+            currentUsername: {
+                fontWeight: 'bold',
+                color: 'blueviolet'
             },
             message: { fontSize: 15 },
         }
@@ -31,7 +36,9 @@ class MessagesList extends Component {
                     {this.props.messages.map((message, index) => (
                         <li key={index} style={styles.li}>
                             <div>
-                                <span style={styles.senderUsername}>{message.senderId}</span>{' '}
+                                <span style={message.senderId !== this.props.currentUser ? styles.senderUsername : styles.currentUsername}>
+                                    {message.senderId}
+                                </span>{' '}
                             </div>
                             <p style={styles.message}>{message.text}</p>
                         </li>

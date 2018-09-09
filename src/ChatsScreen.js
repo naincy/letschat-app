@@ -17,6 +17,8 @@ import People from '@material-ui/icons/People';
 import Popover from '@material-ui/core/Popover';
 
 class ChatScreen extends Component {
+    defaultRoomId = 15759972;
+    userSubscriptions = [this.defaultRoomId];
     constructor(props) {
         super(props)
         this.state = {
@@ -28,7 +30,7 @@ class ChatScreen extends Component {
             teamprivacy: false,
             currentUserTeams: {},
             currentUserFriends: {},
-            currentRoomId: 15644813,
+            currentRoomId: this.defaultRoomId,
             addUser: false,
             addusername: '',
             anchorEl: null,
@@ -46,6 +48,7 @@ class ChatScreen extends Component {
         this.chatManager = '';
         this.onLogout = this.onLogout.bind(this);
         this.onFriendChat = this.onFriendChat.bind(this)
+        localStorage.setItem('subscribedRooms', JSON.stringify(this.userSubscriptions))
     }
 
     componentDidMount() {
@@ -153,6 +156,7 @@ class ChatScreen extends Component {
         this.chatManager
             .connect()
             .then(currentUser => {
+                console.log(currentUser);
                 const friends = currentUser.users.filter(function (el) { return el.id !== currentUser.id; });
                 this.setState({ currentUser })
                 this.setState({ currentUserTeams: currentUser.rooms })
@@ -194,6 +198,7 @@ class ChatScreen extends Component {
     }
 
     chatManagerLoadRoomMessages(roomId) {
+        this.setState({messages: [] })
         this.chatManager
         .connect()
         .then(currentUser => {
@@ -202,15 +207,39 @@ class ChatScreen extends Component {
             return currentUser.fetchMessages({
                 roomId: roomId,
             }).then(messages => {
-                this.setState({
-                    messages: messages,
-                });
+                this.setState({messages: messages })
               })
               .catch(err => {
                 console.log(`Error fetching messages: ${err}`)
               })
         })
         .catch(error => console.error('error', error))
+    }
+
+    chatManagerSubscribeRoom(roomId) {
+        return this.state.currentUser.subscribeToRoom({
+            roomId: roomId,
+            messageLimit: 100,
+            hooks: {
+                onNewMessage: message => {
+                    this.setState({
+                        messages: [...this.state.messages, message],
+                    })
+                },
+                onUserStartedTyping: user => {
+                    this.setState({
+                        usersWhoAreTyping: [...this.state.usersWhoAreTyping, user.name],
+                    })
+                },
+                onUserStoppedTyping: user => {
+                    this.setState({
+                        usersWhoAreTyping: this.state.usersWhoAreTyping.filter(
+                            username => username !== user.name
+                        ),
+                    })
+                },
+            },
+        })   
     }
 
     onTeamChange(id) {
@@ -220,6 +249,18 @@ class ChatScreen extends Component {
         this.setState({currentRoom : newRoom[0] });
         newRoom[0].userIds.length > 0 ? this.getTeamMembers(id) : '';
         this.chatManagerLoadRoomMessages(id);
+        this.handleTeamSubscription(id)
+    }
+
+    handleTeamSubscription(roomid) {
+        const subscribed = JSON.parse(localStorage.getItem('subscribedRooms'))
+        console.log(subscribed);
+        const isSubscribed = subscribed.indexOf(roomid);
+        if (isSubscribed < 0) {
+            this.userSubscriptions.push(roomid)
+            localStorage.setItem('subscribedRooms', JSON.stringify(this.userSubscriptions));
+            this.chatManagerSubscribeRoom(roomid);
+        }
     }
 
     getTeamMembers(id, flag=false) {
@@ -393,7 +434,7 @@ class ChatScreen extends Component {
                              : ''}
                             </div>
                             { !this.state.currentFriendId ? 
-                                <MessageList messages={this.state.messages} style={styles.chatList}/> :
+                                <MessageList currentUser={this.state.currentUser.name} messages={this.state.messages} style={styles.chatList}/> :
                                  <h4 className="under-maintain">Under Maintenance</h4> }
                         <TypingIndicator usersWhoAreTyping={this.state.usersWhoAreTyping} />
                         <SendMessageForm
