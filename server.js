@@ -50,8 +50,8 @@ app.post('/authenticate', (req, res) => {
   res.status(authData.status).send(authData.body)
 })
 
-const PORT = 3001
-app.listen(process.env.PORT || PORT, err => {
+const PORT = process.env.PORT || 3001
+app.listen(PORT, err => {
   if (err) {
     console.error(err)
   } else {
