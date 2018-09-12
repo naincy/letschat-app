@@ -26,6 +26,7 @@
     "serve": "concurrently \"node ./server.js\" \"react-scripts start\"",
     "start": "node ./server.js -port $PORT -host 0.0.0.0",
     "build": "react-scripts build",
+    "postinstall": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   }
