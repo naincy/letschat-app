@@ -31,18 +31,26 @@ class App extends Component {
       type: 'LOGOUT_USER'
     });
     localStorage.removeItem('subscribedRooms');
+    localStorage.removeItem('isLoggedIn');
   }
 
   render() {
-    const screen_ = this.props.screen || 'WhatIsYourUsernameScreen'
+
     const username_ = this.props.currentUsername || '';
-    if (screen_ === 'WhatIsYourUsernameScreen') {
+    if (this.props.currentUsername && ! localStorage.getItem('isLoggedIn')) {
+      localStorage.setItem('isLoggedIn', this.props.currentUsername);
+    }
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    if ( ! isLoggedIn) {
       localStorage.removeItem('subscribedRooms');
-      return <UsernameForm onSubmit={this.onUsernameSubmitted} />
     }
-    if (screen_ === 'ChatScreen') {
-      return <ChatScreen currentUsername={username_} onLogout={this.onUserLogout} />
-    }
+
+    return (
+      <div>{
+        ! isLoggedIn ? <UsernameForm onSubmit={this.onUsernameSubmitted} />
+          : <ChatScreen currentUsername={isLoggedIn} onLogout={this.onUserLogout} />
+      }</div>
+    )
   }
 }
 

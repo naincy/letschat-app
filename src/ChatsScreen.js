@@ -486,14 +486,15 @@ class ChatScreen extends Component {
                             </div>
                              : ''}
                             </div>
-                            { !this.state.currentFriendId ? 
-                                <MessageList currentUser={this.state.currentUser.name} messages={this.state.messages} style={styles.chatList}/> :
-                                 <h4 className="under-maintain">Under Maintenance</h4> }
-                        <TypingIndicator usersWhoAreTyping={this.state.usersWhoAreTyping} />
-                        <SendMessageForm
-                            onSubmit={this.sendMessage}
-                            onChange={this.sendTypingEvent}
-                        />
+                            { !this.state.currentFriendId ? <div>
+                                <MessageList currentUser={this.state.currentUser.name} messages={this.state.messages} style={styles.chatList}/>
+                                <TypingIndicator usersWhoAreTyping={this.state.usersWhoAreTyping} />
+                                <SendMessageForm
+                                    onSubmit={this.sendMessage}
+                                    onChange={this.sendTypingEvent}
+                                /></div>
+                                : <h4 className="under-maintain">Under Maintenance</h4> }
+                        
                     </section>
                 </div>
             </div>
