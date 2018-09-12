@@ -23,10 +23,10 @@
     "concurrently": "^3.5.1"
   },
   "scripts": {
-    "start": "concurrently \"node ./server.js\" \"react-scripts start\"",
-    "postinstall": "react-scripts build",
+    "serve": "concurrently \"node ./server.js\" \"react-scripts start\"",
+    "start": "node ./server.js -port $PORT -host 0.0.0.0",
     "build": "react-scripts build",
-    "test": "mocha src/**/*.test.js",
+    "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   }
 }
