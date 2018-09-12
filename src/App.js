@@ -35,8 +35,6 @@ class App extends Component {
   }
 
   render() {
-
-    const username_ = this.props.currentUsername || '';
     if (this.props.currentUsername && ! localStorage.getItem('isLoggedIn')) {
       localStorage.setItem('isLoggedIn', this.props.currentUsername);
     }

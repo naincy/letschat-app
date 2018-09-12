@@ -250,7 +250,9 @@ class ChatScreen extends Component {
         const newRoom = this.state.currentUserTeams.filter(function (el) { return el.id === id; });
         this.setState({currentRoomId : id });
         this.setState({currentRoom : newRoom[0] });
-        newRoom[0].userIds.length > 0 ? this.getTeamMembers(id) : '';
+        if (newRoom[0].userIds.length > 0) {
+             this.getTeamMembers(id);
+        }
         this.chatManagerLoadRoomMessages(id);
         this.handleTeamSubscription(id)
     }
