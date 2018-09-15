@@ -1,6 +1,5 @@
 import { takeLatest, call, put } from "redux-saga/effects";
-import axios from "axios";
-
+import { getUsers } from './services';
 
 export default function* sagas() {
   yield takeLatest("GET_USERNAME", takeChatDashboard);
@@ -18,11 +17,5 @@ function* takeChatDashboard(action) {
 }
 
 function* logoutUser() {
-}
-
-function getUsers(username) {
-    return axios.post('http://localhost:3001/users',{ username }).then(result => new Promise((resolve, reject) => {
-        resolve(username);
-    })).catch(error => {return username})
 }
     
